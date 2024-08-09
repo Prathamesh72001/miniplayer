@@ -175,6 +175,7 @@ class _MiniplayerState extends State<Miniplayer> with TickerProviderStateMixin {
               (widget.maxHeight - widget.minHeight);
 
           return Stack(
+            fit: StackFit.expand,
             alignment: Alignment.bottomCenter,
             children: [
               if (_percentage > 0)
@@ -183,25 +184,27 @@ class _MiniplayerState extends State<Miniplayer> with TickerProviderStateMixin {
                   child: Opacity(
                     opacity: borderDouble(
                         minRange: 0.0, maxRange: 1.0, value: _percentage),
-                    child: Container(color: widget.backgroundColor),
+                    child: Container(),
                   ),
                 ),
               Align(
                 alignment: Alignment.bottomCenter,
-                child: SizedBox(
+                child: Container(
+                  color: Colors.transparent,
                   height: height,
                   child: GestureDetector(
                     child: ValueListenableBuilder(
                       valueListenable: dragDownPercentage,
-                      builder:
-                          (BuildContext context, double value, Widget? child) {
+                      builder: (BuildContext context, double value,
+                          Widget? child) {
                         return Opacity(
                           opacity: borderDouble(
                               minRange: 0.0,
                               maxRange: 1.0,
                               value: 1 - value * 0.8),
                           child: Transform.translate(
-                            offset: Offset(0.0, widget.minHeight * value * 0.5),
+                            offset:
+                                Offset(0.0, widget.minHeight * value * 0.5),
                             child: child,
                           ),
                         );
@@ -211,38 +214,33 @@ class _MiniplayerState extends State<Miniplayer> with TickerProviderStateMixin {
                           constraints: BoxConstraints.expand(),
                           child: widget.builder(height, _percentage),
                           decoration: BoxDecoration(
-                            boxShadow: <BoxShadow>[
-                              BoxShadow(
-                                  color: widget.backgroundBoxShadow,
-                                  blurRadius: widget.elevation,
-                                  offset: Offset(0.0, 4))
-                            ],
-                            color: widget.backgroundColor ??
-                                Theme.of(context).scaffoldBackgroundColor,
+                            color: Color(0xFF06041F),
                           ),
                         ),
                       ),
                     ),
-                    onTap: () => _snapToPosition(_dragHeight != widget.maxHeight
-                        ? PanelState.MAX
-                        : PanelState.MIN),
+                    onTap: () => _snapToPosition(
+                        _dragHeight != widget.maxHeight
+                            ? PanelState.MAX
+                            : PanelState.MIN),
                     onPanStart: (details) {
                       _startHeight = _dragHeight;
                       updateCount = 0;
-
+          
                       if (animating) {
                         _resetAnimationController();
                       }
                     },
                     onPanEnd: (details) async {
                       ///Calculates drag speed
-                      double speed = (_dragHeight - _startHeight * _dragHeight <
-                                  _startHeight
-                              ? 1
-                              : -1) /
-                          updateCount *
-                          100;
-
+                      double speed =
+                          (_dragHeight - _startHeight * _dragHeight <
+                                      _startHeight
+                                  ? 1
+                                  : -1) /
+                              updateCount *
+                              100;
+          
                       ///Define the percentage distance depending on the speed with which the widget should snap
                       double snapPercentage = 0.005;
                       if (speed <= 4) {
@@ -252,28 +250,28 @@ class _MiniplayerState extends State<Miniplayer> with TickerProviderStateMixin {
                       } else if (speed <= 50) {
                         snapPercentage = 0.01;
                       }
-
+          
                       ///Determine to which SnapPosition the widget should snap
                       PanelState snap = PanelState.MIN;
-
+          
                       final _percentageMax = percentageFromValueInRange(
                           min: widget.minHeight,
                           max: widget.maxHeight,
                           value: _dragHeight);
-
+          
                       ///Started from expanded state
                       if (_startHeight > widget.minHeight) {
                         if (_percentageMax > 1 - snapPercentage) {
                           snap = PanelState.MAX;
                         }
                       }
-
+          
                       ///Started from minified state
                       else {
                         if (_percentageMax > snapPercentage) {
                           snap = PanelState.MAX;
                         }
-
+          
                         ///DismissedPercentage > 0.2 -> dismiss
                         else if (onDismissed != null &&
                             percentageFromValueInRange(
@@ -285,16 +283,16 @@ class _MiniplayerState extends State<Miniplayer> with TickerProviderStateMixin {
                           snap = PanelState.DISMISS;
                         }
                       }
-
+          
                       ///Snap to position
                       _snapToPosition(snap);
                     },
                     onPanUpdate: (details) {
                       if (dismissed) return;
-
+          
                       _dragHeight -= details.delta.dy;
                       updateCount++;
-
+          
                       _handleHeightChange();
                     },
                   ),
